@@ -1220,7 +1220,7 @@ namespace SFXChallenger.Champions
             private static CardColor GetCurrentCard()
             {
                 var spell = ObjectManager.Player.Spellbook.GetSpell(SpellSlot.W);
-                switch (spell.Name)
+                switch (spell.Name.ToLower())
                 {
                     case "bluecardlock":
                         return CardColor.Blue;
@@ -1232,43 +1232,40 @@ namespace SFXChallenger.Champions
                 return CardColor.None;
             }
 
-            private static void OnObjAiBaseProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
+        private static void OnObjAiBaseProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
+        {
+            try
             {
-                try
+                if (sender.IsMe)
                 {
-                    if (!sender.IsMe)
+                    switch (args.SData.Name.ToLower())
                     {
-                        return;
+                        case "pickacard":
+                            _currentCycleCard = CardColor.None;
+                            _currentCycleIndex = -1;
+                            _lastCycleSwitch = 0;
+                            Status = SelectStatus.Selecting;
+                            break;
+                        case "goldcardlock":
+                            LastCard = CardColor.Gold;
+                            Status = SelectStatus.Selected;
+                            break;
+                        case "bluecardlock":
+                            LastCard = CardColor.Blue;
+                            Status = SelectStatus.Selected;
+                            break;
+                        case "redcardlock":
+                            LastCard = CardColor.Red;
+                            Status = SelectStatus.Selected;
+                            break;
                     }
-
-                    if (args.SData.Name == "PickACard")
-                    {
-                        _currentCycleCard = CardColor.None;
-                        _currentCycleIndex = -1;
-                        _lastCycleSwitch = 0;
-                        Status = SelectStatus.Selecting;
-                    }
-                    if (args.SData.Name == "goldcardlock")
-                    {
-                        LastCard = CardColor.Gold;
-                        Status = SelectStatus.Selected;
-                    }
-                    else if (args.SData.Name == "bluecardlock")
-                    {
-                        LastCard = CardColor.Blue;
-                        Status = SelectStatus.Selected;
-                    }
-                    else if (args.SData.Name == "redcardlock")
-                    {
-                        LastCard = CardColor.Red;
-                        Status = SelectStatus.Selected;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Global.Logger.AddItem(new LogItem(ex));
                 }
             }
+            catch (Exception ex)
+            {
+                Global.Logger.AddItem(new LogItem(ex));
+            }
+        }
         }
     }
 }
